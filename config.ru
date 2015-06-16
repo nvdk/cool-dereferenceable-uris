@@ -1,4 +1,4 @@
 require 'rubygems'
-require 'api'
+require 'lib/api'
 
-CoolUris.run! :host => 'localhost', :port => 9292
+run CoolUris
