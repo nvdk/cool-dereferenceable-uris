@@ -1,6 +1,6 @@
 # Cool dereferenceable uris
-A simple web api that dereferences real world objects in a sparql endpoint following the cool uri's strategy, based on data available in the endpoint.
-The api takes a query parameter "uri" and will dereference to the data view or the html view based on accept headers.
+A simple web api that dereferences real world objects in a sparql endpoint following the [cool uri's strategy](http://www.w3.org/TR/cooluris/).
+The api takes a query parameter "uri" and will dereference to the data view or the html view based on accept headers, based on data available in the endpoint.
 
 Example triples:
 
