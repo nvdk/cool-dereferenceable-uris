@@ -1,4 +1,5 @@
-# Cool dereferenceable uris
+# Cool dereferenceable uris [![Build Status](https://travis-ci.org/nvdk/cool-dereferenceable-uris.svg?branch=master)](https://travis-ci.org/nvdk/cool-dereferenceable-uris)
+
 A simple web api that dereferences real world objects in a sparql endpoint following the [cool uri's strategy](http://www.w3.org/TR/cooluris/).
 The api takes a query parameter "uri" and will dereference to the data view or the html view based on accept headers, based on data available in the endpoint.
 
