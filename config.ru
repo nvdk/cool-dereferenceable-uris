@@ -1,4 +1,4 @@
 require 'rubygems'
-require 'lib/api'
+require_relative './lib/api'
 
 run CoolUris
