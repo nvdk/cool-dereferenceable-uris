@@ -57,9 +57,7 @@ class CoolUris < Sinatra::Base
     # check if the accepts headers contain a html compatible format
     def accepts_html?(accept_headers)
       html_types = ['text/html', '*/*', 'text/*']
-      puts accept_headers.inspect
       intersection = accept_headers.map(&:to_s) & html_types
-      intersection.inspect
       intersection.size > 0
     end
   end
