@@ -1,32 +1,66 @@
 require 'sinatra/base'
 require 'sparql/client'
+require 'json' 
 
 class CoolUris < Sinatra::Base
-  get '/' do
-    uri = RDF::URI.new(params[:uri])
-    client = SPARQL::Client.new(ENV["SPARQL_ENDPOINT"])
-    result = []
-    request.accept.each do |type|
-      puts type
-      case type.to_s
-        when 'application/sparql-results+xml', 'text/rdf+n3', 'text/rdf+ttl', 'text/rdf+turtle', 'text/turtle', 'text/n3', 'application/turtle', 'application/x-turtle', 'application/rdf+xml' then 
-              result = client.select.where([uri, RDF::RDFS.isDefinedBy, :page]).result
-        when 'text/html', '*/*', 'text/*'
-              result = client.select.where([uri, RDF::FOAF.page, :page]).result
-      else
-        status 406
-      end
-    end
-    if result.size == 1
-        puts result.inspect
-        redirect result.first[:page], 303
-    else
-      status 404 
-    end
+  configure do
+    set :sparql_client, SPARQL::Client.new(ENV['SPARQL_ENDPOINT'])
   end
 
+  get '/' do
+    # verify request
+    unless params[:uri]
+      halt 400, { error:"query parameter uri is required"}.to_json
+    end
+    
+    # request representations for uri
+    uri = params[:uri]
+    query  = "SELECT ?pageURL ?dataURL WHERE {"
+    query += "  OPTIONAL { <#{uri}> <#{RDF::RDFS.isDefinedBy}> ?dataURL.}"
+    query += "  OPTIONAL { <#{uri}> <#{RDF::FOAF.page}> ?pageURL.}"
+    query += "}"
+    result = query(query)
+    info = result.first ? result.first : nil
+
+    # verify URI has at least one representation
+    unless info && (info['dataURL'] || info['pageURL'])
+      halt 404, { error: "#{uri} does not seem to exist"}.to_json
+    end    
+
+    # content negotiation
+    if accepts_rdf?(request.accept) && info['dataURL']
+     redirect info['dataURL'], 303
+    elsif accepts_html?(request.accept) && info['pageURL']
+      redirect info['pageURL'], 303
+    elsif accepts_html?(request.accept) && info['dataURL']
+      redirect info['dataURL'], 303
+    else
+      halt 406, { error: "#{uri} is not available in the requested format"}.to_json
+    end
+  end
 
   get '/status' do
     "{\"sparql_endpoint\": #{ENV["SPARQL_ENDPOINT"]}})"
   end  
+
+  helpers do
+    # query helper, uses configured sparql client to query
+    def query(query)
+      settings.sparql_client.query query
+    end
+    # check if the accept headers contain at least one of the known rdf serialization formats
+    def accepts_rdf?(accept_headers)
+      rdf_types = ['application/sparql-results+xml', 'text/rdf+n3', 'text/rdf+ttl', 'text/rdf+turtle', 'text/turtle', 'text/n3', 'application/turtle', 'application/x-turtle', 'application/rdf+xml']
+      intersection = accept_headers.map(&:to_s) & rdf_types
+      intersection.size > 0
+    end
+    # check if the accepts headers contain a html compatible format
+    def accepts_html?(accept_headers)
+      html_types = ['text/html', '*/*', 'text/*']
+      puts accept_headers.inspect
+      intersection = accept_headers.map(&:to_s) & html_types
+      intersection.inspect
+      intersection.size > 0
+    end
+  end
 end
