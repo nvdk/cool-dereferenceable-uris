@@ -25,7 +25,7 @@ rackup
 ```
 
 ## Usage
-curl http://localhost/?uri=<uriEncode(http://your-uri/id/my-id)>
+`curl http://localhost/?uri=<uriEncode(http://your-uri/id/my-id)>`
 
 
 ## License
