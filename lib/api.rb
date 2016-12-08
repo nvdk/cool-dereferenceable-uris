@@ -1,10 +1,12 @@
 require 'sinatra/base'
 require 'sparql/client'
+require 'rdf/vocab'
 require 'json' 
 
 class CoolUris < Sinatra::Base
   configure do
     set :sparql_client, SPARQL::Client.new(ENV['SPARQL_ENDPOINT'])
+    set :logging, true
   end
 
   get '/' do
@@ -16,8 +18,8 @@ class CoolUris < Sinatra::Base
     # request representations for uri
     uri = params[:uri]
     query  = "SELECT ?pageURL ?dataURL WHERE {"
-    query += "  OPTIONAL { <#{uri}> <#{RDF::RDFS.isDefinedBy}> ?dataURL.}"
-    query += "  OPTIONAL { <#{uri}> <#{RDF::FOAF.page}> ?pageURL.}"
+    query += "  OPTIONAL { <#{uri}> <#{RDF::Vocab::RDFS.isDefinedBy}> ?dataURL.}"
+    query += "  OPTIONAL { <#{uri}> <#{RDF::Vocab::FOAF.page}> ?pageURL.}"
     query += "}"
     result = query(query)
     info = result.first ? result.first : nil
